@@ -3,6 +3,7 @@ import nltk
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
 
 import re
+import pickle
 import numpy as np
 import pandas as pd
 from nltk.tokenize import word_tokenize
@@ -21,23 +22,64 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
 
 def load_data(database_filepath):
-    pass
+    # load data from database
+    engine = create_engine('sqlite:///{}'.format(database_filepath))
+    df = pd.read_sql_table('table_name', con=engine)
+    X = df["message"]
+    Y = df.drop(['id', 'message', 'original', 'genre'], axis=1)
+    return X, Y, Y.columns
 
 
 def tokenize(text):
-    pass
+    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "urlplaceholder")
+
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+
+    clean_tokens = []
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tokens.append(clean_tok)
+
+    return clean_tokens
 
 
 def build_model():
-    pass
+    pipeline = Pipeline([
+        ('features', FeatureUnion([
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ]))
+        ])),
+        ('multi', MultiOutputClassifier(KNeighborsClassifier()))
+    ])
+
+    parameters = {
+        'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
+        'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0),
+        'features__text_pipeline__vect__max_features': (None, 5000, 10000),
+        'features__text_pipeline__tfidf__use_idf': (True, False)
+    }
+
+    cv = GridSearchCV(pipeline, param_grid=parameters)
+
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    y_pred_imp = model.predict(X_test)
+    y_pred_imp_df = pd.DataFrame(y_pred_imp, columns=Y_test.columns)
+    for column in category_names:
+        print(classification_report(Y_test[column], y_pred_imp_df[column]))
 
 
 def save_model(model, model_filepath):
-    pass
+    with open(model_filepath, 'wb') as file:  
+        pickle.dump(model, file)
 
 
 def main():
