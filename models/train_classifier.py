@@ -1,6 +1,6 @@
 import sys
 import nltk
-nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
+from nltk.corpus import stopwords
 
 import re
 import pickle
@@ -10,6 +10,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from sqlalchemy import create_engine
 
+from sklearn.svm import LinearSVC
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV
@@ -18,6 +19,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
 
@@ -38,7 +40,11 @@ def tokenize(text):
 
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
-
+    
+    # remove stop words
+    stopwords_ = stopwords.words("english")
+    tokens = [word for word in tokens if word not in stopwords_]
+    
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
@@ -48,26 +54,24 @@ def tokenize(text):
 
 
 def build_model():
-    pipeline = Pipeline([
-        ('features', FeatureUnion([
-            ('text_pipeline', Pipeline([
-                ('vect', CountVectorizer(tokenizer=tokenize)),
-                ('tfidf', TfidfTransformer())
-            ]))
-        ])),
-        ('multi', MultiOutputClassifier(KNeighborsClassifier()))
-    ])
+    # model pipeline
+    pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
+                         ('tfidf', TfidfTransformer()),
+                         ('clf', MultiOutputClassifier(
+                            OneVsRestClassifier(LinearSVC())))])
 
-    parameters = {
-        'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
-        'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0),
-        'features__text_pipeline__vect__max_features': (None, 5000, 10000),
-        'features__text_pipeline__tfidf__use_idf': (True, False)
-    }
+    # hyper-parameter grid
+    parameters = {'vect__ngram_range': ((1, 1), (1, 2)),
+                  'vect__max_df': (0.75, 1.0)
+                  }
 
-    cv = GridSearchCV(pipeline, param_grid=parameters)
+    # create model
+    model = GridSearchCV(estimator=pipeline,
+            param_grid=parameters,
+            verbose=3,
+            cv=3)
 
-    return cv
+    return model
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
