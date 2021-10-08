@@ -6,7 +6,7 @@ Motivation of this project is to classify text messages during a disaster to mak
 ### Installation
 Please use virtualenv and after you can install necessary libraries using requirements.txt
 
-`pip install -r /path/to/requirements.txt`
+`pip install -r requirements.txt`
 
 ### File Descriptions
         disaster_response_pipeline
