@@ -1,6 +1,13 @@
 # Disaster Response Pipeline Project
 
-### Instructions:
+### Motivations
+Motivation of this project is to classify text messages during a disaster to make them reachable by responsible parties. 
+
+### Installation
+Please use virtualenv and after you can install necessary libraries using requirements.txt
+`pip install -r /path/to/requirements.txt`
+
+### Instructions
 1. Run the following commands in the project's root directory to set up your database and model.
 
     - To run ETL pipeline that cleans data and stores in database
