@@ -42,11 +42,12 @@ def clean_data(df):
     df = df.drop("categories", 1)
 
     # concatenate the original dataframe with the new `categories` dataframe
-    df = pd.concat([df,categories], 1)
+    df = pd.concat([df, categories], 1)
 
     # drop duplicates
     df = df.drop_duplicates()
-
+    df["related"] = df["related"].astpye("str").str.replace("2", "1")
+    df["related"] = df["related"].astype("int")
     return df
 
 def save_data(df, database_filename):
