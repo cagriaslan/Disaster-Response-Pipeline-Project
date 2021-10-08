@@ -42,7 +42,16 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    
+
+    # extract several other metrics
+    extra_info_dict = {
+        "Aid Related": df[df["aid_related"] == 1].count()["aid_related"],
+        "Medical Help": df[df["medical_help"] == 1].count()["medical_help"],
+        "Shelter Need": df[df["shelter"] == 1].count()["shelter"]
+    }
+    y_names = ["Aid Related", "Medical Help", "Shelter Need"]
+    extra_info_series = pd.Series(data=extra_info_dict, index=y_names)
+    print(extra_info_series.head)
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -61,6 +70,24 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=y_names,
+                    y=extra_info_series
+                )
+            ],
+
+            'layout': {
+                'title': 'Several Other Important Metrics',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Classification type"
                 }
             }
         }
