@@ -6,7 +6,7 @@ Motivation of this project is to classify text messages during a disaster to mak
 ### Installation
 Please use virtualenv and after you can install necessary libraries using requirements.txt
 
-`pip install -r /path/to/requirements.txt`
+`pip install -r requirements.txt`
 
 ### File Descriptions
         disaster_response_pipeline
@@ -25,8 +25,8 @@ Please use virtualenv and after you can install necessary libraries using requir
                 |-- train_classifier.py
           |-- requirements.txt
           |-- README
-* 
-* data folder is holding all the csv files and combined db file.
+* app folder containts relevant files for flask app.
+* data folder contains all the csv files and combined db file.
 * models folder includes the trained model and the classifier code.
 
 ### Instructions
