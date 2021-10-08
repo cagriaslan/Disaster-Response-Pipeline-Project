@@ -50,8 +50,9 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filename):
+    """Saving DataFrame to the database"""
     engine = create_engine('sqlite:///{}'.format(database_filename))
-    df.to_sql('table_name', engine, index=False)  
+    df.to_sql('table_name', engine, index=False, if_exists="replace")
 
 
 def main():
