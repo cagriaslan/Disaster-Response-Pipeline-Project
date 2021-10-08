@@ -9,6 +9,25 @@ Please use virtualenv and after you can install necessary libraries using requir
 `pip install -r /path/to/requirements.txt`
 
 ### File Descriptions
+        disaster_response_pipeline
+          |-- app
+                |-- templates
+                        |-- go.html
+                        |-- master.html
+                |-- run.py
+          |-- data
+                |-- disaster_message.csv
+                |-- disaster_categories.csv
+                |-- DisasterResponse.db
+                |-- process_data.py
+          |-- models
+                |-- classifier.pkl
+                |-- train_classifier.py
+          |-- requirements.txt
+          |-- README
+* 
+* data folder is holding all the csv files and combined db file.
+* models folder includes the trained model and the classifier code.
 
 ### Instructions
 1. Run the following commands in the project's root directory to set up your database and model.
